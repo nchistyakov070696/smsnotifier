@@ -1,0 +1,63 @@
+version: "3.8"
+services:
+    web:
+        container_name: web
+        build:
+            context: .
+            dockerfile: ./ops/Dockerfile
+        command: "sh /run-web.sh"
+        ports:
+            - "8085:80"
+        volumes:
+            - ./symfony:/app
+        links:
+            - database
+        depends_on:
+            database:
+                condition: service_healthy
+        env_file:
+            - ./symfony/.env
+        environment:
+            PHP_IDE_CONFIG: serverName=docker
+        networks:
+            - local_network
+
+    database:
+        image: postgres:16.1
+        container_name: database
+        ports:
+            - "54321:5432"
+        environment:
+            POSTGRES_USER: "dev"
+            POSTGRES_PASSWORD: "dev"
+            POSTGRES_DB: "dev"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U dev"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        hostname: database
+        networks:
+            - local_network
+
+    rabbitmq:
+        container_name: message_broker
+        image: rabbitmq:3.12-management
+        ports: [5672, 15672]
+        networks:
+            - local_network
+        volumes:
+            - ./ops/definitions.json:/etc/rabbitmq/definitions.json
+
+networks:
+    local_network:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24
+                  gateway: 10.9.0.1
+
+volumes:
+    postgres_data:

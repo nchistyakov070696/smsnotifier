@@ -1,0 +1,19 @@
+### Send SMS message
+POST http://localhost:8085/api/sms/send
+Content-Type: application/json
+
+{
+  "accessToken": "some_hashed_token_0",
+  "phoneNumber": "+375(29)1111111",
+  "message": "test_message"
+}
+
+### Get statistics about sent messages and total price as well
+POST http://localhost:8085/api/statistics/by-providers
+Content-Type: application/json
+
+{
+  "accessToken": "some_hashed_token_0",
+  "dateFrom": "2023-12-12 00:00:00",
+  "dateTo": "2023-12-14 00:00:00"
+}
